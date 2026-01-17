@@ -12,7 +12,7 @@ brew install vmnet-helper
 > [!NOTE]
 > This tap requires macOS 26 (Tahoe) or later.
 > For macOS 15 and earlier see
-> [installation](https://github.com/nirs/vmnet-helper?tab=readme-ov-file#installation).
+> [installation](https://github.com/nirs/vmnet-helper#installation).
 
 ## More Information
 
