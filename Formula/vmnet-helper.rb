@@ -11,12 +11,12 @@ class VmnetHelper < Formula
   depends_on :macos => :tahoe
 
   def install
-    bin.install "vmnet-helper/bin/vmnet-helper"
-    bin.install "vmnet-helper/bin/vmnet-client"
+    libexec.install "vmnet-helper/bin/vmnet-helper"
+    libexec.install "vmnet-helper/bin/vmnet-client"
   end
 
   test do
-    output = shell_output("#{bin}/vmnet-helper --version")
+    output = shell_output("#{libexec}/vmnet-helper --version")
     assert_match "v0.9.0", output
     assert_match "b76a29eb542d3ce4df18c4ebef6b1498174a02e5", output
   end
