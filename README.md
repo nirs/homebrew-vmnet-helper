@@ -1,6 +1,6 @@
 # homebrew-vmnet-helper
 
-Homebrew formula for vmnet-helper - high-performance vmnet proxy for VMs
+Homebrew formula for vmnet-helper - High-performance network proxy connecting VMs to macOS vmnet
 
 ## Installation
 
