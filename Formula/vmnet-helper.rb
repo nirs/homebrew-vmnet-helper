@@ -11,8 +11,8 @@ class VmnetHelper < Formula
   depends_on :macos => :tahoe
 
   def install
-    bin.install "opt/vmnet-helper/bin/vmnet-helper"
-    bin.install "opt/vmnet-helper/bin/vmnet-client"
+    bin.install "vmnet-helper/bin/vmnet-helper"
+    bin.install "vmnet-helper/bin/vmnet-client"
   end
 
   test do
