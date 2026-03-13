@@ -4,8 +4,8 @@
 class VmnetHelper < Formula
   desc "High-performance network proxy connecting VMs to macOS vmnet"
   homepage "https://github.com/nirs/vmnet-helper"
-  url "https://github.com/nirs/vmnet-helper/releases/download/v0.9.0/vmnet-helper.tar.gz"
-  sha256 "5c76413428a09ce45faf719f7fb2f621e9b3a0b103024837aecdb8319cdcf32c"
+  url "https://github.com/nirs/vmnet-helper/releases/download/v0.10.0/vmnet-helper.tar.gz"
+  sha256 "bcf37a2631878a24fd02e2bf812b7387d4c4ff0bcee27c3f4be410c040896f8b"
   license "Apache-2.0"
 
   depends_on :macos => :tahoe
@@ -17,7 +17,7 @@ class VmnetHelper < Formula
 
   test do
     output = shell_output("#{libexec}/vmnet-helper --version")
-    assert_match "v0.9.0", output
-    assert_match "b76a29eb542d3ce4df18c4ebef6b1498174a02e5", output
+    assert_match "v0.10.0", output
+    assert_match "c593b89a2e93e92cfe7c5b1189e1eeb2c7977554", output
   end
 end
