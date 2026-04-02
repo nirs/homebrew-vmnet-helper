@@ -5,7 +5,7 @@ class VmnetHelper < Formula
   desc "High-performance network proxy connecting VMs to macOS vmnet"
   homepage "https://github.com/nirs/vmnet-helper"
   url "https://github.com/nirs/vmnet-helper/releases/download/v0.11.0/vmnet-helper.tar.gz"
-  sha256 "791270bd91801cac88490ff19c0b68016bedb5d290d79f9fa0cd4aab940be03a"
+  sha256 "dfeca3e8cc9d9b1e0e40df12e42975f10433b9ccbb8f0a239d42df99611caa76"
   license "Apache-2.0"
 
   depends_on :macos => :tahoe
