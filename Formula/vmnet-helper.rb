@@ -14,18 +14,18 @@ class VmnetHelper < Formula
   depends_on macos: :tahoe
 
   def install
-    system "meson", "setup", "build", *std_meson_args, "--bindir=#{libexec}"
+    system "meson", "setup", "build", *std_meson_args
     system "meson", "compile", "-C", "build"
     system "meson", "install", "-C", "build"
     system "codesign", "--force", "--sign", "-",
            "--entitlements", "building/entitlements.plist",
-           libexec/"vmnet-helper"
+           bin/"vmnet-helper"
   end
 
   test do
-    output = shell_output("#{libexec}/vmnet-helper --version")
+    output = shell_output("#{bin}/vmnet-helper --version")
     assert_match "v#{version}", output
-    output = shell_output("codesign -d --entitlements - #{libexec}/vmnet-helper")
+    output = shell_output("codesign -d --entitlements - #{bin}/vmnet-helper")
     assert_match "com.apple.security.virtualization", output
   end
 end
