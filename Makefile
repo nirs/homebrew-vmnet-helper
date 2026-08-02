@@ -7,6 +7,7 @@ BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 
 tap:
 	brew tap $(TAP) $(CURDIR)
+	brew trust $(TAP)
 
 untap:
 	-brew uninstall vmnet-helper
