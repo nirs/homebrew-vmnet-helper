@@ -6,6 +6,7 @@ Homebrew formula for vmnet-helper - High-performance network proxy connecting VM
 
 ```console
 brew tap nirs/vmnet-helper
+brew trust nirs/vmnet-helper
 brew install vmnet-helper
 ```
 
