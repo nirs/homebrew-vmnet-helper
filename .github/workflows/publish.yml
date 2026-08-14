@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: The vmnet-helper authors
+# SPDX-License-Identifier: Apache-2.0
+
+# Publish bottles for a PR after tests pass.
+# Uses brew pr-pull to upload bottles to GitHub Packages and update the formula.
+#
+# Trigger by adding the 'pr-pull' label to the PR.
+#
+# Security: Uses 'pull_request' (not 'pull_request_target') so write permissions
+# are only granted for same-repo PRs. Fork PRs get read-only access and will
+# fail. Only collaborators can push branches to this repo and add labels, so
+# both the PR author and the person triggering publish must have write access.
+
+name: publish
+
+on:
+  pull_request:
+    types: [labeled]
+
+# Skip tap trust check since the CI runner has not run brew trust.
+env:
+  HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
+
+jobs:
+  pr-pull:
+    if: github.event.label.name == 'pr-pull'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      packages: write
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+        with:
+          core: true
+          cask: false
+
+      - name: Configure git identity
+        uses: Homebrew/actions/git-user-config@master
+        with:
+          username: BrewTestBot
+
+      - name: Upload bottles and update formula
+        env:
+          # Token for downloading PR artifacts and interacting with the GitHub API.
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+          # Credentials for uploading bottles to GitHub Packages (ghcr.io).
+          HOMEBREW_GITHUB_PACKAGES_USER: ${{ github.repository_owner }}
+          HOMEBREW_GITHUB_PACKAGES_TOKEN: ${{ github.token }}
+        run: |
+          brew pr-pull --debug \
+            --root-url="https://ghcr.io/v2/${{ github.repository_owner }}/vmnet-helper" \
+            --tap="$GITHUB_REPOSITORY" \
+            "${{ github.event.pull_request.number }}"
+
+      - name: Push formula with bottle block
+        uses: Homebrew/actions/git-try-push@master
+        with:
+          token: ${{ github.token }}
+          branch: main

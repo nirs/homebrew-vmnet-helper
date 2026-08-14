@@ -19,42 +19,35 @@ brew install vmnet-helper
 
 See [vmnet-helper](https://github.com/nirs/vmnet-helper) for documentation.
 
-## Development
-
-### Setup
-
-Remove the current tap if installed, then tap from your local clone:
-
-```console
-make untap
-make tap
-```
-
-### Install and test
-
-```console
-make install
-make test
-make audit
-```
-
-### After switching branches or making new commits
-
-```console
-make sync
-```
-
-### Bump to a new release
+## Bump to a new release
 
 After tagging a new release in the
 [vmnet-helper](https://github.com/nirs/vmnet-helper) repo:
 
+1. Run `./bump.sh v0.14.0` to update the formula URL and SHA256.
+2. Push a PR with the updated formula.
+3. Wait for CI to pass (bottles built and tested on macOS 26 intel and arm64).
+4. Label the PR `pr-pull`.
+5. CI uploads bottles to ghcr.io and commits the `bottle do` block.
+6. Merge the PR.
+
+For local testing before merging, see [Local development](#local-development).
+
+## Local development
+
+CI builds and tests bottles automatically. Local testing is optional but
+useful when iterating on formula changes.
+
+### Build and test a bottle locally
+
 ```console
-./bump.sh v0.12.0
-make install
-make test
-make audit
+brew install --build-bottle vmnet-helper
+brew bottle vmnet-helper
+brew reinstall ./vmnet-helper--*.bottle.tar.gz
+brew test vmnet-helper
 ```
 
-The bump script downloads the source tarball, computes the SHA256, and
-updates the formula URL and hash.
+1. Build from source in a way suitable for bottling (no local path references).
+2. Package the build into a bottle `.tar.gz` file.
+3. Install from the bottle to verify it works as a pre-built binary.
+4. Run the formula's test block to verify the binary and codesigning.

@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: The vmnet-helper authors
+# SPDX-License-Identifier: Apache-2.0
+
+# Build and test formula on PRs; produce bottle artifacts for publishing.
+
+name: tests
+
+on:
+  push:
+    branches: [main]
+    paths: ['Formula/**']
+  pull_request:
+    branches: [main]
+    paths: ['Formula/**']
+  workflow_dispatch:
+
+env:
+  # Enable developer mode for stricter checks and verbose errors.
+  HOMEBREW_DEVELOPER: 1
+  # Adjust output formatting for CI.
+  HOMEBREW_GITHUB_ACTIONS: 1
+  # Prevent auto-update before every command to save time and avoid flakiness.
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  # Use the local tap checkout instead of fetching formula metadata from the API.
+  HOMEBREW_NO_INSTALL_FROM_API: 1
+  # Skip tap trust check since the CI runner has not run brew trust.
+  HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
+
+jobs:
+  test-bot:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-26-intel
+          - runner: macos-26
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Configure test environment
+        run: brew test-bot --only-setup
+
+      - name: Check formula syntax
+        run: brew test-bot --only-tap-syntax
+
+      - name: Build and test bottles
+        run: |
+          brew test-bot --only-formulae \
+            --root-url="https://ghcr.io/v2/${{ github.repository_owner }}/vmnet-helper"
+
+      - name: Upload bottle artifacts
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: bottles-${{ matrix.runner }}
+          path: '*.bottle.*'
