@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: The vmnet-helper authors
 # SPDX-License-Identifier: Apache-2.0
 
+# First version using bottles.
+
 class VmnetHelper < Formula
   desc "High-performance network proxy connecting VMs to macOS vmnet"
   homepage "https://github.com/nirs/vmnet-helper"
