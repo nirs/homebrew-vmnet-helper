@@ -40,7 +40,7 @@ jobs:
     permissions:
       # Fetch the tap and run git operations for test-bot.
       contents: read
-      # Detect which formulae the PR changed.
+      # setup-homebrew checks out the PR merge commit.
       pull-requests: read
       # Fetch existing bottles from this tap's GitHub Packages (ghcr.io).
       packages: read
@@ -59,8 +59,12 @@ jobs:
         run: brew test-bot --only-tap-syntax
 
       - name: Build and test bottles
+        # Always bottle this tap's one formula. test-bot otherwise only
+        # builds formulae that differ from origin/main, so a workflow-only
+        # PR would produce no bottles for the current version.
         run: |
           brew test-bot --only-formulae \
+            --testing-formulae=vmnet-helper \
             --root-url="https://ghcr.io/v2/${{ github.repository_owner }}/vmnet-helper"
 
       - name: Upload bottle artifacts
@@ -69,4 +73,4 @@ jobs:
         with:
           name: bottles_${{ matrix.runner }}
           path: '*.bottle.*'
-          if-no-files-found: warn
+          if-no-files-found: error
