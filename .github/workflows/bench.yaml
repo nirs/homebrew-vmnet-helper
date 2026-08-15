@@ -1,0 +1,57 @@
+# SPDX-FileCopyrightText: The vmnet-helper authors
+# SPDX-License-Identifier: Apache-2.0
+
+# Time brew install from source vs bottle the way a user would:
+# brew update, tap, trust, then install.
+
+name: bench
+
+on:
+  # Manual only. Do not run on formula/release PRs.
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/bench.yaml'
+
+# Default deny; the job grants only what install needs.
+permissions: {}
+
+jobs:
+  bench:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-26-source
+            runner: macos-26
+            from_source: true
+          - name: macos-26-bottle
+            runner: macos-26
+            from_source: false
+          - name: macos-26-intel-source
+            runner: macos-26-intel
+            from_source: true
+          - name: macos-26-intel-bottle
+            runner: macos-26-intel
+            from_source: false
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      # Fetch this tap's bottles from GitHub Packages (ghcr.io).
+      packages: read
+    steps:
+      - name: Update Homebrew
+        run: brew update
+
+      - name: Tap nirs/vmnet-helper
+        run: |
+          brew tap nirs/vmnet-helper
+          brew trust nirs/vmnet-helper
+
+      - name: Install from source
+        if: matrix.from_source
+        run: time brew install --yes --build-from-source vmnet-helper
+
+      - name: Install bottle
+        if: matrix.from_source == false
+        run: time brew install --yes --force-bottle vmnet-helper
