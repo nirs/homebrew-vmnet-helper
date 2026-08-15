@@ -24,7 +24,7 @@ See [vmnet-helper](https://github.com/nirs/vmnet-helper) for documentation.
 After tagging a new release in the
 [vmnet-helper](https://github.com/nirs/vmnet-helper) repo:
 
-1. Run `./bump.sh v0.14.0` to update the formula URL and SHA256.
+1. Run `./bump v0.14.0` to update the formula URL and SHA256.
 2. Push a PR with the updated formula.
 3. Wait for CI to pass (bottles built and tested on macOS 26 intel and arm64).
 4. Label the PR `pr-pull`. CI uploads bottles to ghcr.io and pushes a
