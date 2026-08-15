@@ -11,6 +11,13 @@ class VmnetHelper < Formula
   license "Apache-2.0"
   head "https://github.com/nirs/vmnet-helper.git", branch: "main"
 
+  bottle do
+    root_url "https://ghcr.io/v2/nirs/vmnet-helper"
+    rebuild 1
+    sha256 cellar: :any_skip_relocation, arm64_tahoe: "f4d489697078cbb1ef193dd08aa875bbfacdc74376644ac434a1a0d5944ce8b5"
+    sha256 cellar: :any_skip_relocation, tahoe:       "7245e424c54f231471906f0566b92a373cf6cfce1cc483ec5ba47513e62f1f08"
+  end
+
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on macos: :tahoe
