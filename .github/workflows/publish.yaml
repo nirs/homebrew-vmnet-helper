@@ -54,7 +54,10 @@ jobs:
           username: BrewTestBot
 
       - name: Check out the PR branch
-        run: git switch --force-create "${{ github.event.pull_request.head.ref }}" "${{ github.event.pull_request.head.sha }}"
+        env:
+          PR_REF: ${{ github.event.pull_request.head.ref }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git switch --force-create "${PR_REF}" "${PR_SHA}"
 
       - name: Upload bottles and update formula
         env:
@@ -63,6 +66,8 @@ jobs:
           # Credentials for uploading bottles to GitHub Packages (ghcr.io).
           HOMEBREW_GITHUB_PACKAGES_USER: ${{ github.repository_owner }}
           HOMEBREW_GITHUB_PACKAGES_TOKEN: ${{ github.token }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         # Commit bottles on the PR branch. Do not cherry-pick onto main or amend
         # the bump commit; main updates only when the PR is merged.
         run: |
@@ -71,10 +76,10 @@ jobs:
             --no-cherry-pick \
             --branch-okay \
             --clean \
-            --head-sha="${{ github.event.pull_request.head.sha }}" \
+            --head-sha="${PR_SHA}" \
             --root-url="https://ghcr.io/v2/${{ github.repository_owner }}/vmnet-helper" \
             --tap="$GITHUB_REPOSITORY" \
-            "${{ github.event.pull_request.number }}"
+            "${PR_NUMBER}"
 
       - name: Push formula with bottle block
         uses: Homebrew/actions/git-try-push@8f3d1ec8a696b3b9d9a6c3696b6c73033cab69e4 # 2026.08.14.1
