@@ -2,20 +2,24 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Publish bottles for a PR after tests pass.
-# Uses brew pr-pull to upload bottles to GitHub Packages and update the formula.
+# Uses brew pr-pull to upload bottles to GitHub Packages and add a bottle
+# commit on the PR branch. main is unchanged until the PR is merged, so
+# brew install keeps serving the previous formula until then.
 #
 # Trigger by adding the 'pr-pull' label to the PR.
-#
-# Security: Uses 'pull_request' (not 'pull_request_target') so write permissions
-# are only granted for same-repo PRs. Fork PRs get read-only access and will
-# fail. Only collaborators can push branches to this repo and add labels, so
-# both the PR author and the person triggering publish must have write access.
+# Anyone with write access can label a same-repo PR and publish bottles; that
+# is intended. Fork PRs cannot: this uses pull_request (not pull_request_target)
+# so they get a read-only token and the job fails.
+# --head-sha pins publish to the PR head at label time.
 
 name: publish
 
 on:
   pull_request:
     types: [labeled]
+
+# Default deny; the job grants only what pr-pull needs.
+permissions: {}
 
 # Skip tap trust check since the CI runner has not run brew trust.
 env:
@@ -26,20 +30,31 @@ jobs:
     if: github.event.label.name == 'pr-pull'
     runs-on: ubuntu-latest
     permissions:
+      # Look up tests.yaml, list the PR's workflow run, and download bottle artifacts.
+      actions: read
+      # Find that run via the PR head commit's check suites.
+      checks: read
+      # Commit the bottle block and push it to the PR branch.
       contents: write
-      pull-requests: write
+      # Upload bottles to GitHub Packages (ghcr.io).
       packages: write
+      # Read PR commits, labels, and reviews used by brew pr-pull.
+      pull-requests: read
     steps:
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@8f3d1ec8a696b3b9d9a6c3696b6c73033cab69e4 # 2026.08.14.1
         with:
           core: true
           cask: false
 
       - name: Configure git identity
-        uses: Homebrew/actions/git-user-config@master
+        uses: Homebrew/actions/git-user-config@8f3d1ec8a696b3b9d9a6c3696b6c73033cab69e4 # 2026.08.14.1
         with:
           username: BrewTestBot
+
+      - name: Check out the PR branch
+        run: git switch --force-create "${{ github.event.pull_request.head.ref }}" "${{ github.event.pull_request.head.sha }}"
 
       - name: Upload bottles and update formula
         env:
@@ -48,14 +63,21 @@ jobs:
           # Credentials for uploading bottles to GitHub Packages (ghcr.io).
           HOMEBREW_GITHUB_PACKAGES_USER: ${{ github.repository_owner }}
           HOMEBREW_GITHUB_PACKAGES_TOKEN: ${{ github.token }}
+        # Commit bottles on the PR branch. Do not cherry-pick onto main or amend
+        # the bump commit; main updates only when the PR is merged.
         run: |
           brew pr-pull --debug \
+            --workflows=tests.yaml \
+            --no-cherry-pick \
+            --branch-okay \
+            --clean \
+            --head-sha="${{ github.event.pull_request.head.sha }}" \
             --root-url="https://ghcr.io/v2/${{ github.repository_owner }}/vmnet-helper" \
             --tap="$GITHUB_REPOSITORY" \
             "${{ github.event.pull_request.number }}"
 
       - name: Push formula with bottle block
-        uses: Homebrew/actions/git-try-push@master
+        uses: Homebrew/actions/git-try-push@8f3d1ec8a696b3b9d9a6c3696b6c73033cab69e4 # 2026.08.14.1
         with:
           token: ${{ github.token }}
-          branch: main
+          branch: ${{ github.event.pull_request.head.ref }}

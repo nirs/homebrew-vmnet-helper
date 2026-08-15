@@ -6,12 +6,15 @@
 name: tests
 
 on:
-  push:
-    branches: [main]
-    paths: ['Formula/**']
   pull_request:
-    paths: ['Formula/**']
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
   workflow_dispatch:
+
+# Default deny; the job grants only what test-bot needs.
+permissions: {}
 
 env:
   # Enable developer mode for stricter checks and verbose errors.
@@ -34,12 +37,20 @@ jobs:
           - runner: macos-26-intel
           - runner: macos-26
     runs-on: ${{ matrix.runner }}
+    permissions:
+      # Fetch the tap and run git operations for test-bot.
+      contents: read
+      # Detect which formulae the PR changed.
+      pull-requests: read
+      # Fetch existing bottles from this tap's GitHub Packages (ghcr.io).
+      packages: read
     steps:
-      - uses: actions/checkout@v7
-
       - name: Set up Homebrew
         id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@8f3d1ec8a696b3b9d9a6c3696b6c73033cab69e4 # 2026.08.14.1
+
+      - name: Reset GitHub runner Homebrew state
+        run: brew test-bot --only-cleanup-before
 
       - name: Configure test environment
         run: brew test-bot --only-setup
@@ -53,8 +64,9 @@ jobs:
             --root-url="https://ghcr.io/v2/${{ github.repository_owner }}/vmnet-helper"
 
       - name: Upload bottle artifacts
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v7
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: bottles-${{ matrix.runner }}
+          name: bottles_${{ matrix.runner }}
           path: '*.bottle.*'
+          if-no-files-found: warn
